@@ -4,7 +4,7 @@ import pynauty
 from collections import defaultdict
 from pyomo.repn import generate_standard_repn
 
-model = pyomo_mps.parse('/Users/michaelradigan/pyomo-mps-parser/mps/enlight4.mps')
+model = pyomo_mps.parse('/Users/michaelradigan/pyomo-mps-parser/mps/enlight_hard.mps')
 
 num_vertices = 0
 obj_var_coefs = {}
@@ -12,16 +12,13 @@ obj_var_coefs = {}
 # Going to make this really easy initially by iterating through once initially and building up an index map
 graph_indices = {}
 for n, constraint in model.c.items():
-    print(constraint.name)
     graph_indices[constraint.name] = num_vertices
     num_vertices += 1
 
 for n, variable in model.vd.items():
-    print(variable.name)
     graph_indices[variable.name] = num_vertices
     num_vertices += 1
-
-
+    
 # I think that first, we go through the objective function build a map from variable->onj_coeff
 standard_objective = generate_standard_repn(model.o)
 for i, (variable, coefficient) in enumerate(zip(standard_objective.linear_vars, standard_objective.linear_coefs)):
@@ -56,13 +53,10 @@ for name, constraint in model.c.items():
 # So, in building the adjacency dict, we want to colour constraints in one colour (maybe this changes in the future).
 # We then want to partition the variables by their upper bound, lower bound and their value (if any) in the objective function
 
-
-
 # Inefficient to itereate through yet again but want it to be as obvious as possible what's going on
 # I think that we may also need to consider constraint colourings!
 variable_colouring_dict = defaultdict(set)
 for n, variable in model.vd.items():
-    print(variable.name)
     variable_index = graph_indices[variable.name]
     obj_coef = obj_var_coefs[variable.name] if variable.name in obj_var_coefs else 0
     variable_colouring_dict[(variable.lb, variable.ub, obj_coef)].add(variable_index)    
@@ -73,21 +67,11 @@ for n, constraint in model.c.items():
     constraint_index = graph_indices[constraint.name]
     constraint_colouring_dict[(constraint.lb, constraint.ub, constraint.rhs)].add(constraint_index)
 
-
-
 vertex_colourings = []
 vertex_colourings.extend(variable_colouring_dict.values())
 vertex_colourings.extend(constraint_colouring_dict.values())
-
-
 
 # We haven't yet done the vertex_colourings yet but let's just see what we get for now 
 graph = pynauty.Graph(num_vertices, False, adjacency_dict, vertex_colourings)
 aut = pynauty.autgrp(graph)
 print(aut[3])
-
-
-
-
-
-#print(model.o())
