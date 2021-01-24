@@ -53,11 +53,38 @@ for name, constraint in model.c.items():
             adjacency_dict[variable_index].append(intermediate_vertex_index)
             num_vertices += 1
        
-# We haven't yet done the vertex_colourings yet but let's see what we get now 
-graph = pynauty.Graph(num_vertices, False, adjacency_dict, {})
+# So, in building the adjacency dict, we want to colour constraints in one colour (maybe this changes in the future).
+# We then want to partition the variables by their upper bound, lower bound and their value (if any) in the objective function
+
+
+
+# Inefficient to itereate through yet again but want it to be as obvious as possible what's going on
+# I think that we may also need to consider constraint colourings!
+variable_colouring_dict = defaultdict(set)
+for n, variable in model.vd.items():
+    print(variable.name)
+    variable_index = graph_indices[variable.name]
+    obj_coef = obj_var_coefs[variable.name] if variable.name in obj_var_coefs else 0
+    variable_colouring_dict[(variable.lb, variable.ub, obj_coef)].add(variable_index)    
+
+# Let's look at some constraint colourings
+constraint_colouring_dict = defaultdict(set)
+for n, constraint in model.c.items():
+    constraint_index = graph_indices[constraint.name]
+    constraint_colouring_dict[(constraint.lb, constraint.ub, constraint.rhs)].add(constraint_index)
+
+
+
+vertex_colourings = []
+vertex_colourings.extend(variable_colouring_dict.values())
+vertex_colourings.extend(constraint_colouring_dict.values())
+
+
+
+# We haven't yet done the vertex_colourings yet but let's just see what we get for now 
+graph = pynauty.Graph(num_vertices, False, adjacency_dict, vertex_colourings)
 aut = pynauty.autgrp(graph)
 print(aut[3])
-#print(aut)
 
 
 
