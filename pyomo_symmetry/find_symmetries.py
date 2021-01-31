@@ -3,23 +3,34 @@ import pynauty
 from collections import defaultdict
 from pyomo.repn import generate_standard_repn
 
-
 def find_symmetries(model):
-    """ Given a pyomo model, find the symmetry groups in its constraints and vertices"""
-
     num_vertices = 0
     obj_var_coefs = {}
 
     # Going to make this really easy initially by iterating through once initially and building up an index map
     graph_indices = {}
+    variable_names = {}
+
+    def add_vertex(name, num):
+        graph_indices[name] = num
+        variable_names[num] = name
+        return num + 1
+
+
+
     for n, constraint in model.c.items():
-        graph_indices[constraint.name] = num_vertices
-        num_vertices += 1
+        num_vertices = add_vertex(constraint.name, num_vertices)
+        #graph_indices[constraint.name] = num_vertices
+        #num_vertices += 1
 
     for n, variable in model.vd.items():
-        graph_indices[variable.name] = num_vertices
-        num_vertices += 1
-        
+        num_vertices = add_vertex(variable.name, num_vertices)
+        #graph_indices[variable.name] = num_vertices
+        #num_vertices += 1
+
+    # The number of vertices before the inclusion of intermediate vertices
+    num_model_vertices = num_vertices
+
     # I think that first, we go through the objective function build a map from variable->onj_coeff
     standard_objective = generate_standard_repn(model.o)
     for i, (variable, coefficient) in enumerate(zip(standard_objective.linear_vars, standard_objective.linear_coefs)):
@@ -76,4 +87,17 @@ def find_symmetries(model):
     graph = pynauty.Graph(num_vertices, False, adjacency_dict, vertex_colourings)
     aut = pynauty.autgrp(graph)
 
-    return aut
+
+    symmetry_groups = defaultdict(set)
+    for index, min_vertex in enumerate(aut[3][:num_model_vertices]):
+
+        # I think that we're doing it slightly wrong here, we should use the constraint names here
+        symmetry_groups[min_vertex].add(variable_names[index])
+
+    return set(map(lambda s: frozenset(s), symmetry_groups.values()))
+
+
+
+from pyomo_mps import parse
+model = parse('/Users/michaelradigan/pyomo-mps-parser/mps/enlight8.mps')
+print(find_symmetries(model))
