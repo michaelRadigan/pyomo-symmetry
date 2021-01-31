@@ -28,22 +28,22 @@ for i, (variable, coefficient) in enumerate(zip(standard_objective.linear_vars, 
 adjacency_dict = defaultdict(list)
 
 for name, constraint in model.c.items():
-    # variables that share a coefficient within a constraint can coalesce their intermediate nodes
+    # variables that share a coefficient within a constraint can coalesce their intermediate vertices
     coalesce_dict = {}
     repn = generate_standard_repn(constraint.body)
     constraint_index = graph_indices[constraint.name]
     for coefficient, variable in zip(repn.linear_coefs, repn.linear_vars):
-        # So, first we want an intermediate node 
+        # So, first we want an intermediate vertex 
         variable_index = graph_indices[variable.name]
         if coefficient == 1:
-            # For now, if the coefficient is one, we will not use an intermediate node    
+            # For now, if the coefficient is one, we will not use an intermediate vertex    
             adjacency_dict[constraint_index].append(variable_index)
         elif coefficient in coalesce_dict:
             intermediate_vertex_index = coalesce_dict[coefficient]
             # The intermediate vertex is already connected to the constraint vertex, so here we just need to connect it to this variable
             adjacency_dict[variable_index].append(intermediate_vertex_index)
         else:
-            # We do not yet have an intermediate node for this coefficient and vertex, let's make one
+            # We do not yet have an intermediate vertex for this coefficient and vertex, let's make one
             intermediate_vertex_index = num_vertices
             coalesce_dict[coefficient] = intermediate_vertex_index
             adjacency_dict[constraint_index].append(intermediate_vertex_index)
