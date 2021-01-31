@@ -14,7 +14,7 @@ install_requires = ['pyomo', 'pynauty-nice']
 setup(
     name='pyomo-symmetry',
     version=version['__version__'],
-    description='A (work in progress) module to find the symmetry groups of a pyomo model',
+    description='A (work in progress) module to find the symmetry groups of a pyomo model using a novel algorithm',
     author='Michael Radigan',
     author_email='michael@radigan.co.uk',
     url='https://github.com/michaelRadigan/pyomo-symmetry',
