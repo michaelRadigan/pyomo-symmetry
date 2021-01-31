@@ -1,4 +1,3 @@
-import pyomo_mps.parse
 from pyomo.kernel import SolverFactory
 import pynauty
 from collections import defaultdict
