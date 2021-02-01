@@ -95,9 +95,3 @@ def find_symmetries(model):
         symmetry_groups[min_vertex].add(variable_names[index])
 
     return set(map(lambda s: frozenset(s), symmetry_groups.values()))
-
-
-
-from pyomo_mps import parse
-model = parse('/Users/michaelradigan/pyomo-mps-parser/mps/enlight8.mps')
-print(find_symmetries(model))
